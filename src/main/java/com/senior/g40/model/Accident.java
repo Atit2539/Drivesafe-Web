@@ -13,19 +13,30 @@ import java.sql.Date;
  */
 public class Accident {
 
+    private long accidentId;
     private long userId;
     private Date date;
     private String time;
-    private float latitude;
-    private float longtitude;
-    private float forceDetect;
+    private double latitude;
+    private double longtitude;
+    private double forceDetect;
     private float speedDetect;
+
     //-- accCode is have very importance role.
     private char accCode;
-    //A[Accident]: Pending for rescue, 
-    //R[Resecue]: Rescuer is on the way, 
-    //C[Clear]: Rescue received, marking will be cleared next time.  
 
+    public static char ACC_CODE_A = 'A';
+    public static char ACC_CODE_G = 'G';
+    public static char ACC_CODE_R = 'R';
+    public static char ACC_CODE_C = 'C';
+    public static char ACC_CODE_ERRU = '1';
+    public static char ACC_CODE_ERRS = '2';
+    //A[Accident]: Pending for rescue, 
+    //G[Going]: Rescuer is on the way, 
+    //R[Resecue]: Rescuer is rescuing, 
+    //C[Clear]: Rescue received, marking will be cleared next time.  
+    //1[False on User]
+    //2[False on System]
     private static Accident accident;
 
     public Accident() {
@@ -42,11 +53,29 @@ public class Accident {
         this.accCode = accCode;
     }
 
+    public Accident(long userId, Date date, String time, float latitude, float longtitude, float forceDetect, float speedDetect) {
+        this.userId = userId;
+        this.date = date;
+        this.time = time;
+        this.latitude = latitude;
+        this.longtitude = longtitude;
+        this.forceDetect = forceDetect;
+        this.speedDetect = speedDetect;
+    }
+
     public static Accident getInsatance() {
         if (accident == null) {
             accident = new Accident();
         }
         return accident;
+    }
+
+    public long getAccidentId() {
+        return accidentId;
+    }
+
+    public void setAccidentId(long accidentId) {
+        this.accidentId = accidentId;
     }
 
     public long getUserId() {
@@ -73,7 +102,7 @@ public class Accident {
         this.time = time;
     }
 
-    public float getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
@@ -81,7 +110,7 @@ public class Accident {
         this.latitude = latitude;
     }
 
-    public float getLongtitude() {
+    public double getLongtitude() {
         return longtitude;
     }
 
@@ -89,7 +118,7 @@ public class Accident {
         this.longtitude = longtitude;
     }
 
-    public float getForceDetect() {
+    public double getForceDetect() {
         return forceDetect;
     }
 

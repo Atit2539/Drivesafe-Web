@@ -10,8 +10,10 @@ import com.senior.g40.model.Profile;
 import com.senior.g40.service.AccidentService;
 import com.senior.g40.service.UserService;
 import com.senior.g40.utils.A;
+import com.senior.g40.utils.Result;
 import java.io.IOException;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,7 @@ public class DriverAppInServlet extends HttpServlet {
         AccidentService accService = AccidentService.getInstance();
         UserService usrService = UserService.getInstance();
         String option = request.getParameter("opt");
+        Result rs;
         switch (option) {
             case "login": //1. Driver Login Section START ---- 
                 Profile pf = usrService.login(
@@ -51,25 +54,43 @@ public class DriverAppInServlet extends HttpServlet {
                         request.getParameter("utyp").charAt(0)); //Or constant'M'
                 request.setAttribute("result", usrService.convertProfileToJSON(pf));
                 break; //1.END ---- 
-            case "acchit": //2. Driver got an accident and save accident data Section START ---- 
-                Accident accident = new Accident(getL("usrid"),
-                         new Date(System.currentTimeMillis()),
-                         getS("time"),
-                         getF("lat"),
-                         getF("lng"),
-                         getF("fdt"),
-                         getF("sdt"),
-                         getS("accc").charAt(0));
-                if (accService.saveAccident(accident)) {
-                    request.setAttribute("result", true);
+            case "acchit": //2. Driver got an accident and save accident data Section START ----
+                rs = accService.saveAccident(getAccidentData());
+                if (rs.isSuccess()) {
+                    // **PRIORITY** DONE! -> will system return 'Accident' Data back? 
+                    Accident acc = (Accident) rs.getObj();
+                    request.setAttribute("result", accService.convertAccidentToJSON(acc));
                 }
                 break; //2. END ---- 
+            case "usr_accfalse": //3. for receive/acknowledge user false positive data.
+                rs = accService.updateOnUserFalseAccc(Long.valueOf(request.getParameter("accid")));
+                if (rs.isSuccess()) {
+                    request.setAttribute("result", true);
+                }
+                break;// 3. END ------
+            case "sys_accfalse": //4. for receive/acknowledge system false positive data.
+                rs = accService.updateOnSystemFalseAccc(Long.valueOf(request.getParameter("accid")));
+                if (rs.isSuccess()) {
+                    request.setAttribute("result", true);
+                }
+                break;//4. END ------
             default:
                 System.out.println("N/A");
                 return;
         }
 
         getServletContext().getRequestDispatcher(A.Path.JSP_RESULT_DIR + "result.jsp").forward(request, response);
+    }
+
+    private Accident getAccidentData() {
+        Date currentDate = new Date(System.currentTimeMillis());
+        return new Accident(getL("usrid"),
+                currentDate,
+                new SimpleDateFormat("HH:mm").format(currentDate),
+                getF("lat"),
+                getF("lng"),
+                getF("fdt"),
+                getF("sdt"));
     }
 
     private String getS(String param) {
